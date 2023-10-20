@@ -3,6 +3,8 @@ Guide with step by step to deploy a new Kubernetes Cluster and test it.
 Its important to know that this guide is based on official references: 
 https://kubernetes.io/docs/setup/production-environment/tools/kubeadm
 
+Principal reference: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/
+
 ## Architecture
 
 ### Steps
@@ -28,6 +30,8 @@ ssh-copy-id $node
 #### SWAP OFF
 ```bash
 sudo swapoff -a
+sed -i -e 's/.*swap/#&/' /etc/fstab
+mount -a
 ```
 
 #### Ports Available
@@ -63,6 +67,7 @@ systemctl enable kubelet
 
 firewall-cmd --permanent --add-port=6443/tcp
 firewall-cmd --permanent --add-port=2379-2380/tcp
+firewall-cmd --permanent --add-port=10248/tcp
 firewall-cmd --permanent --add-port=10250/tcp
 firewall-cmd --permanent --add-port=10251/tcp
 firewall-cmd --permanent --add-port=10252/tcp
@@ -98,9 +103,27 @@ sed -i 's/disabled_plugins/enabled_plugins/g' /etc/containerd/config.toml
 systemctl restart containerd
 ```
 
+- Init Cluster
+```bash
+kubeadm init
+```
+*Expected results are: 
+Your Kubernetes control-plane has initialized successfully!
 
 
-https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/
+- Join nodes to the cluster
+kubeadm join kub01:6443 --token 0t2gk1.ajzl07w4gn6zh976 \
+        --discovery-token-ca-cert-hash sha256:608f32b2dce4f180ce9558e4c710b05d41d967fa77763fe3ae59a691f843aaa9
+
+After adding the nodes, its possible to check the nodes status at the control-plane node:
+
+![nodes_status](image.png)
+
+
+More information about joining nodes to the cluster: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#join-nodes
+
+
+
 
 
 
