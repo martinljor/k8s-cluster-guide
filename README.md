@@ -106,12 +106,16 @@ systemctl restart containerd
 
 - Init Cluster
 ```bash
-kubeadm init --pod-network-cidr=172.16.0.0/24
+kubeadm init 
 ```
 *Expected results are: 
 Your Kubernetes control-plane has initialized successfully!
 
 export KUBECONFIG=/etc/kubernetes/admin.conf
+
+```bash
+kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
+```
 
 - Join nodes to the cluster
 kubeadm join kub01:6443 --token cd8k4h.h17ovxru3y6z3kbw \
@@ -119,22 +123,9 @@ kubeadm join kub01:6443 --token cd8k4h.h17ovxru3y6z3kbw \
 
 More information about joining nodes to the cluster: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#join-nodes
 
-After adding the nodes, its possible to check the nodes status at the control-plane node:
 
-![nodes_status](image.png)
 
-- I have an issue at this point where the nodes were at Not Ready state:
-![not ready](image-1.png)
 
-- Thats why i dont have container network created:
-
-```bash
-kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
-```
-
-![ReadyStatus](image-4.png)
-
-kubectl label node kub01 node-role.kubernetes.io/master
 kubectl label node kub02 node-role.kubernetes.io/worker=worker
 kubectl label node kub03 node-role.kubernetes.io/worker=worker
 
