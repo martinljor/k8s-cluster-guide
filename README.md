@@ -65,6 +65,7 @@ EOF
 yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
 systemctl enable kubelet
 
+firewall-cmd --permanent --add-port=8001/tcp
 firewall-cmd --permanent --add-port=8080/tcp
 firewall-cmd --permanent --add-port=6443/tcp
 firewall-cmd --permanent --add-port=2379-2380/tcp
@@ -106,7 +107,7 @@ systemctl restart containerd
 
 - Init Cluster
 ```bash
-kubeadm init 
+kubeadm init --pod-network-cidr=10.244.0.0/16
 ```
 *Expected results are: 
 Your Kubernetes control-plane has initialized successfully!
@@ -123,13 +124,21 @@ kubeadm join kub01:6443 --token cd8k4h.h17ovxru3y6z3kbw \
 
 More information about joining nodes to the cluster: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#join-nodes
 
-
-
-
 kubectl label node kub02 node-role.kubernetes.io/worker=worker
 kubectl label node kub03 node-role.kubernetes.io/worker=worker
 
+![ClusterReady](image-6.png)
 
+Cluster Ready!
+
+#### Graphic interface
+The Dashboard UI is not deployed by default. To deploy it, run the following command:
+
+```bash
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
+```
+
+kubectl proxy --address=192.168.0.231
 
 
 
