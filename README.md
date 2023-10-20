@@ -132,6 +132,12 @@ After adding the nodes, its possible to check the nodes status at the control-pl
 kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
 ```
 
+![ReadyStatus](image-4.png)
+
+kubectl label node kub01 node-role.kubernetes.io/master
+kubectl label node kub02 node-role.kubernetes.io/worker=worker
+kubectl label node kub03 node-role.kubernetes.io/worker=worker
+
 
 
 
