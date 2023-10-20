@@ -88,6 +88,16 @@ sysctl -p
 ```
 
 
+- Change /etc/containerd/config.toml from disabled_plugin to enabled_plugin and save the file:
+```bash
+sed -i 's/disabled_plugins/enabled_plugins/g' /etc/containerd/config.toml
+```
+
+- Restart service containerd: 
+```bash
+systemctl restart containerd
+```
+
 
 
 https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/
