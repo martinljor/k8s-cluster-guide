@@ -65,6 +65,7 @@ EOF
 yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
 systemctl enable kubelet
 
+firewall-cmd --permanent --add-port=8080/tcp
 firewall-cmd --permanent --add-port=6443/tcp
 firewall-cmd --permanent --add-port=2379-2380/tcp
 firewall-cmd --permanent --add-port=10248/tcp
@@ -105,22 +106,33 @@ systemctl restart containerd
 
 - Init Cluster
 ```bash
-kubeadm init
+kubeadm init --pod-network-cidr=172.16.0.0/24
 ```
 *Expected results are: 
 Your Kubernetes control-plane has initialized successfully!
 
+export KUBECONFIG=/etc/kubernetes/admin.conf
 
 - Join nodes to the cluster
-kubeadm join kub01:6443 --token 0t2gk1.ajzl07w4gn6zh976 \
-        --discovery-token-ca-cert-hash sha256:608f32b2dce4f180ce9558e4c710b05d41d967fa77763fe3ae59a691f843aaa9
+kubeadm join kub01:6443 --token cd8k4h.h17ovxru3y6z3kbw \
+        --discovery-token-ca-cert-hash sha256:f737d7b9d3caadbd7c9bf8358a9e8a335078acad03f6d1fc639599014e7258b2
+
+More information about joining nodes to the cluster: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#join-nodes
 
 After adding the nodes, its possible to check the nodes status at the control-plane node:
 
 ![nodes_status](image.png)
 
+- I have an issue at this point where the nodes were at Not Ready state:
+![not ready](image-1.png)
 
-More information about joining nodes to the cluster: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#join-nodes
+- Thats why i dont have container network created:
+
+```bash
+kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
+```
+
+
 
 
 
