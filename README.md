@@ -159,7 +159,7 @@ kubectl label node kub03 node-role.kubernetes.io/worker=worker
 
 Cluster Ready!
 
-#### Graphic interface
+## Graphic interface 
 The Dashboard UI is not deployed by default. To deploy it, run the following command:
 
 ```bash
@@ -175,6 +175,7 @@ Like this...
 
 ![ModifyDashAccess](image-8.png)
 
+Apply file configuration:
 ```bash
 kubectl create -f  ~/dashboard/recommended.yaml
 kubectl get pods -A  -o wide
