@@ -8,8 +8,7 @@ Principal reference: https://kubernetes.io/docs/setup/production-environment/too
 ## Architecture
 ![ARCK8S](image-10.png)
 
-### Steps
-#### Hosts file
+### Hosts file
 Because I didnt setup DNS services I configured /etc/hosts identically on each node.
 
 ```bash
@@ -18,7 +17,7 @@ Because I didnt setup DNS services I configured /etc/hosts identically on each n
 192.168.0.233   kub03
 ```
 
-#### SSH
+### SSH
 In each node its recommended to have passwordless communication between the nodes.
 Run this commands to grant ssh access between the nodes:
 
@@ -27,28 +26,27 @@ ssh-keygen
 ssh-copy-id $node
 ```
 
-#### SWAP OFF
+### SWAP OFF
+Disable SWAP on each node.
 ```bash
 sudo swapoff -a
 sed -i -e 's/.*swap/#&/' /etc/fstab
 mount -a
 ```
 
-#### Ports Available
-nc 127.0.0.1 6443
+### Disable selinux
+Disable SELINUX on each node.
 
+```bash
+sed -i 's/^SELINUX=enforcing$/SELINUX=disabled/' /etc/selinux/config && reboot
+```
+### YUM repos
+Create the repo
+```bash
  wget https://download.docker.com/linux/centos/docker-ce.repo
  cp docker-ce.repo /etc/yum.repos.d/
 yum repolist
-
-yum install containerd -y
-systemctl enable containerd
-systemctl start containerd
-
-
-sed -i 's/^SELINUX=enforcing$/SELINUX=disabled/' /etc/selinux/config
-reboot
-
+```
 - Add repo for k8s
 ```bash
 cat <<EOF | sudo tee /etc/yum.repos.d/kubernetes.repo
@@ -61,9 +59,24 @@ gpgkey=https://pkgs.k8s.io/core:/stable:/v1.28/rpm/repodata/repomd.xml.key
 exclude=kubelet kubeadm kubectl cri-tools kubernetes-cni
 EOF
 ```
+
+### Install components
+Install the containerd service
+
 ```bash
+yum install containerd -y
+systemctl enable containerd
+systemctl start containerd
+
+
 yum install -y kubelet kubeadm kubectl --disableexcludes=kubernetes
 systemctl enable kubelet
+```
+
+### Firewall
+
+Add rules to the firewall on each node
+```bash
 
 firewall-cmd --permanent --add-port=8001/tcp
 firewall-cmd --permanent --add-port=8080/tcp
@@ -76,10 +89,11 @@ firewall-cmd --permanent --add-port=10252/tcp
 
 firewall-cmd --reload
 firewall-cmd --list-ports
+```
 
-sudo modprobe overlay
-sudo modprobe br_netfilter
+### Enable modules in all nodes
 
+```bash
 cat <<EOF | sudo tee /etc/modules-load.d/containerd.conf
 overlay
 br_netfilter
@@ -92,40 +106,54 @@ net.bridge.bridge-nf-call-ip6tables = 1
 EOF
 
 sysctl -p
+
+modprobe overlay
+modprobe br_netfilter
 ```
 
-
-- Change /etc/containerd/config.toml from disabled_plugin to enabled_plugin and save the file:
+Change /etc/containerd/config.toml from disabled_plugin to enabled_plugin and save the file:
 ```bash
 sed -i 's/disabled_plugins/enabled_plugins/g' /etc/containerd/config.toml
 ```
 
-- Restart service containerd: 
+Restart service containerd: 
 ```bash
 systemctl restart containerd
 ```
 
-- Init Cluster
+### Create cluster
+Init Cluster
 ```bash
 kubeadm init --pod-network-cidr=10.244.0.0/16
 ```
-*Expected results are: 
-Your Kubernetes control-plane has initialized successfully!
+*Expected results are: Your Kubernetes control-plane has initialized successfully!
 
+Env vars to access to the API server:
+```bash
 export KUBECONFIG=/etc/kubernetes/admin.conf
+```
+
+### Create pod network with flannel
+Flannel is a simple and easy way to configure a layer 3 network fabric designed for Kubernetes:
 
 ```bash
 kubectl apply -f https://github.com/flannel-io/flannel/releases/latest/download/kube-flannel.yml
 ```
 
-- Join nodes to the cluster
-kubeadm join kub01:6443 --token cd8k4h.h17ovxru3y6z3kbw \
-        --discovery-token-ca-cert-hash sha256:f737d7b9d3caadbd7c9bf8358a9e8a335078acad03f6d1fc639599014e7258b2
+
+Join nodes to the cluster
+```bash
+kubeadm join kub01:6443 --token $$TOKEN --discovery-token-ca-cert-hash $$HASH
+```
+*Change $$TOKEN and $$HASH to the correct onces. Its appear when you inited the cluster.
 
 More information about joining nodes to the cluster: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/#join-nodes
 
+Change label for worker nodes:
+```bash
 kubectl label node kub02 node-role.kubernetes.io/worker=worker
 kubectl label node kub03 node-role.kubernetes.io/worker=worker
+```
 
 ![ClusterReady](image-6.png)
 
@@ -230,6 +258,9 @@ kubectl get pods
 ![nginxrunning](image-7.png)
 
 Its running on worker kub02.
+
+
+## "Thanks to reach here :)"
 
 
 
