@@ -256,7 +256,7 @@ kubectl get pods
 kubectl describe pod nginx
 ```
 
-![nginxrunning](image-7.png)
+![nginxrunning](images/image-7.png)
 
 Its running on worker kub02.
 
