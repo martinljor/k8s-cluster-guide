@@ -253,7 +253,7 @@ You can now run the command kubectl get pods to see the status of your pod. To v
 
 ```bash
 kubectl get pods
- kubectl describe pod nginx
+kubectl describe pod nginx
 ```
 
 ![nginxrunning](image-7.png)
