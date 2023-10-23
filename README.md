@@ -138,7 +138,24 @@ The Dashboard UI is not deployed by default. To deploy it, run the following com
 kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
 ```
 
-kubectl proxy --address=192.168.0.231
+#### First pod
+Once you’re in the Kubernetes sandbox environment, make sure you’re connected to the Kubernetes cluster by executing kubectl get nodes in the command line to see the cluster's nodes in the terminal. If that worked, you’re ready to create and run a pod.
+
+```bash
+kubectl run nginx --image=nginx --restart=Never
+```
+
+Once you hit enter, the pod will be created. You should see pod/nginx created appear in the terminal.
+You can now run the command kubectl get pods to see the status of your pod. To view the entire configuration of the pod, just run kubectl describe pod nginxin your terminal.
+
+```bash
+kubectl get pods
+ kubectl describe pod nginx
+```
+
+![nginxrunning](image-7.png)
+
+Its running on worker kub02.
 
 
 
