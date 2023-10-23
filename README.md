@@ -1,14 +1,14 @@
 # Kubernetes Cluster
-Guide with step by step to deploy a new Kubernetes Cluster and test it.
+Guide with step by step to deploy a new Kubernetes Cluster and test it creating a pod.
 Its important to know that this guide is based on official references: 
 https://kubernetes.io/docs/setup/production-environment/tools/kubeadm
 
 Principal reference: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/
 
 ## Architecture
+![ARCK8S](image-10.png)
 
 ### Steps
-
 #### Hosts file
 Because I didnt setup DNS services I configured /etc/hosts identically on each node.
 
@@ -135,8 +135,82 @@ Cluster Ready!
 The Dashboard UI is not deployed by default. To deploy it, run the following command:
 
 ```bash
-kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
+mkdir /root/dashboard
+cd /root/dashboard
+wget https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
 ```
+
+Modify "spec" -> "type" to "NodePort"
+Modify "spec" -> "ports" -> "nodePort: 30001"
+
+Like this...
+
+![ModifyDashAccess](image-8.png)
+
+```bash
+kubectl create -f  ~/dashboard/recommended.yaml
+kubectl get pods -A  -o wide
+```
+
+Now create this 3 files:
+dashboard-adminuser.yaml
+dashboard-role.yaml
+dashboard-token.yaml
+
+```bash
+cd /root/dashboard
+cat >> dashboard-adminuser.yaml<<EOF
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: admin-user
+  namespace: kubernetes-dashboard
+EOF
+
+cat >>dashboard-role.yaml.yaml<<EOF
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: admin-user
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cluster-admin
+subjects:
+- kind: ServiceAccount
+  name: admin-user
+  namespace: kubernetes-dashboard
+EOF
+
+cat >>dashboard-token.yaml<<EOF
+apiVersion: v1
+kind: Secret
+metadata:
+  name: admin-user
+  namespace: kubernetes-dashboard
+  annotations:
+    kubernetes.io/service-account.name: "admin-user"
+type: kubernetes.io/service-account-token
+
+```
+![Files-DashboardYAML](image-9.png)
+
+Apply 3 files configuration:
+
+```bash
+kubectl create -f  /root/dashboard-adminuser.yaml
+kubectl create -f  /root/dashboard-role.yaml
+kubectl create -f  /root/dashboard-token.yaml
+```
+
+Now you can now access: https: // NodeIP: 30001
+To obtain the token use this command:
+
+```bash
+kubectl -n kubernetes-dashboard create token admin-user
+```
+
+Copy and paste it into the login screen.
 
 #### First pod
 Once you’re in the Kubernetes sandbox environment, make sure you’re connected to the Kubernetes cluster by executing kubectl get nodes in the command line to see the cluster's nodes in the terminal. If that worked, you’re ready to create and run a pod.
