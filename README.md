@@ -6,7 +6,7 @@ https://kubernetes.io/docs/setup/production-environment/tools/kubeadm
 Principal reference: https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/create-cluster-kubeadm/
 
 ## Architecture
-![ARCK8S](image-10.png)
+![ARCK8S](images/image-10.png)
 
 ### Hosts file
 Because I didnt setup DNS services I configured /etc/hosts identically on each node.
@@ -155,7 +155,7 @@ kubectl label node kub02 node-role.kubernetes.io/worker=worker
 kubectl label node kub03 node-role.kubernetes.io/worker=worker
 ```
 
-![ClusterReady](image-6.png)
+![ClusterReady](images/image-6.png)
 
 Cluster Ready!
 
@@ -173,7 +173,7 @@ Modify "spec" -> "ports" -> "nodePort: 30001"
 
 Like this...
 
-![ModifyDashAccess](image-8.png)
+![ModifyDashAccess](images/image-8.png)
 
 Apply file configuration:
 ```bash
@@ -222,7 +222,7 @@ metadata:
 type: kubernetes.io/service-account-token
 
 ```
-![Files-DashboardYAML](image-9.png)
+![Files-DashboardYAML](images/image-9.png)
 
 Apply 3 files configuration:
 
